@@ -24,9 +24,7 @@ export async function createCategories(data) {
       message: "Gagal membuat kategori",
       error: error.message,
     };
-  } finally {
-    console.log("Proses create category selesai");
-  }
+  } 
 }
 
 export async function updateCategory(id, data) {

@@ -1,5 +1,7 @@
 "use client";
 
+import { deleteAuthors } from "@/actions/master-data/authors/action";
+import { deletePublisher } from "@/actions/master-data/publishers/action";
 import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
 import MainButton from "@/components/CustomUI/MainButton/MainButton";
@@ -9,11 +11,10 @@ import { Input } from "@/components/ui/input";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
-import { deleteCategory } from "@/actions/master-data/categories/action";
+import { toast } from "sonner";
 
-const CategoriesPage = ({
+const AuthorPage = ({
   dataSource = [],
   query = {
     page: 1,
@@ -28,16 +29,15 @@ const CategoriesPage = ({
 
   const handleDelete = async (id) => {
     setLoading(true);
-    const res = await deleteCategory(id);
+    const res = await deleteAuthors(id);
     if (res.success) {
-      toast.success("Kategori berhasil dihapus");
+      toast.success("Data Penulis berhasil dihapus");
       setLoading(false);
     } else {
-      setError(res.message || "Gagal menghapus kategori");
+      setError(res.message || "Gagal menghapus data penulis");
       setLoading(false);
     }
   };
-
   const columns = [
     {
       title: "No",
@@ -55,6 +55,11 @@ const CategoriesPage = ({
       key: "name",
     },
     {
+      title: "Bio",
+      dataIndex: "bio",
+      key: "bio",
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (
@@ -62,7 +67,7 @@ const CategoriesPage = ({
           <MainButton
             loading={loading}
             onClick={() =>
-              router.push(`/master-data/categories/detail/${record.id}`)
+              router.push(`/master-data/authors/detail/${record.id}`)
             }
           >
             Detail
@@ -106,8 +111,8 @@ const CategoriesPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/categories/add")}>
-          Add Categories
+        <MainButton onClick={() => router.push("/master-data/authors/add")}>
+          Add Authors
         </MainButton>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
@@ -139,4 +144,4 @@ const CategoriesPage = ({
   );
 };
 
-export default CategoriesPage;
+export default AuthorPage;

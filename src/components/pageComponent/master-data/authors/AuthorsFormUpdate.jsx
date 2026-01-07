@@ -8,7 +8,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,20 +17,20 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { UpdatePublishers } from "@/actions/master-data/publishers/action";
 import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
 import { toast } from "sonner";
+import { updateAuthors } from "@/actions/master-data/authors/action";
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "Categories must be at least 2 characters.",
+    message: "Authors must be at least 2 characters.",
   }),
-  address: z.string().optional(),
+  bio: z.string().optional(),
 });
 
-export default function PublishersForm({
-  publisherId = null,
-  defaultValues = { name: "", address: "" },
+export default function AuthorsForm({
+  authorId = null,
+  defaultValues = { name: "", bio: "" },
 }) {
   const router = useRouter();
 
@@ -40,17 +40,17 @@ export default function PublishersForm({
   });
 
   async function onSubmit(values) {
-    const res = await UpdatePublishers(publisherId, {
+    const res = await updateAuthors(authorId, {
       name: values.name,
-      address: values.address,
+      bio: values.bio,
     });
 
     if (res.success) {
-      toast.success("Category updated successfully");
-      router.push("/master-data/publishers");
+      toast.success("Authors Data updated successfully");
+      router.push("/master-data/authors");
     } else {
       // alert(res.message);
-      toast.error(res.message || "Failed to update category");
+      toast.error(res.message || "Failed to update author data");
     }
   }
 
@@ -62,7 +62,7 @@ export default function PublishersForm({
           onClick={() => router.back()}
           icon={<ArrowLeft className="h-6 w-6" />}
         />
-        <h1 className="text-2xl font-semibold">Update Publishers</h1>
+        <h1 className="text-2xl font-semibold">Update Author</h1>
       </div>
 
       <Form {...form}>
@@ -82,12 +82,12 @@ export default function PublishersForm({
           />
           <FormField
             control={form.control}
-            name="address"
+            name="bio"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Address</FormLabel>
+                <FormLabel>Bio</FormLabel>
                 <FormControl>
-                  <Input placeholder="address" {...field} />
+                  <Input placeholder="bio" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

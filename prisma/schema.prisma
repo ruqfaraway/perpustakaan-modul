@@ -31,3 +31,13 @@ model Publisher {
 
   @@map("publishers")
 }
+
+model Author {
+  id        String   @id @default(cuid())
+  name      String
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("authors")
+}

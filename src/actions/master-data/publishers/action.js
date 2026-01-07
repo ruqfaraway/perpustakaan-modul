@@ -24,13 +24,10 @@ export async function createPublishers(data) {
       message: "Gagal membuat Penerbit",
       error: error.message,
     };
-  } finally {
-    console.log("Proses create Penerbit selesai");
-  }
+  } 
 }
 
 export async function UpdatePublishers(id, data) {
-  console.log(id, data);
   try {
     if (!id) {
       throw new Error("ID penerbit tidak ditemukan");
