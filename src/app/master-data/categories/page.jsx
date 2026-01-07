@@ -11,6 +11,13 @@ const CategoriesPage = ({ dataSource = [] }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+
+   const tableData = [
+    { id: 1, name: "Fiction" },
+    { id: 2, name: "Non-Fiction" },
+    { id: 3, name: "Science" },
+    { id: 4, name: "History" },
+  ];
   const columns = [
     {
       title: "Name",
@@ -26,9 +33,9 @@ const CategoriesPage = ({ dataSource = [] }) => {
           <div className="flex gap-2">
             <MainButton
               loading={loading}
-              // onClick={() =>
-              //   router.push(`/master-data/education/detail/${record.id}`)
-              // }
+              onClick={() =>
+                router.push(`/master-data/categories/detail/${record.id}`)
+              }
             >
               Detail
             </MainButton>
@@ -63,7 +70,7 @@ const CategoriesPage = ({ dataSource = [] }) => {
             <MainButton type="outline">Search</MainButton>
           </form>
         </div>
-        <MainTable columns={columns} dataSource={dataSource} rowkeys="id" />
+        <MainTable columns={columns} dataSource={tableData} rowkeys="id" />
       </ContentWrapper>
     </>
   );

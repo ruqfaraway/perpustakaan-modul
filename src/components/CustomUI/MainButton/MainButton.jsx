@@ -17,7 +17,7 @@ const MainButton = ({
       onClick={onClick}
       disabled={disabled || loading}
       htmltype={htmlType}
-      className={`${className} flex items-center justify-center gap-2 cursor-pointer`}
+      className={`${className} flex items-center justify-center gap-2 cursor-pointer  rounded-md text-sm font-medium px-2 py-2`}
     >
       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {children}
