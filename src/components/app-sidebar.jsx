@@ -26,17 +26,37 @@ const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
-      title: "Getting Started",
+      title: "Master Data",
       url: "#",
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "Categories",
+          url: "/master-data/categories",
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Publishers",
+          url: "/master-data/publishers",
         },
+        {
+          title: "Authors",
+          url: "/master-data/authors",
+        },
+        {
+          title: "Books",
+          url: "/master-data/books",
+        },
+        {
+          title: "Members",
+          url: "/master-data/members",
+        },
+        {
+          title: "BookAuthors",
+          url: "/master-data/bookauthors"
+        },
+        {
+          title: "BookCopies",
+          url: "/master-data/bookcopies"
+        }
       ],
     },
     {
