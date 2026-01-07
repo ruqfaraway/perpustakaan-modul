@@ -15,8 +15,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AlignLeft, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
+import { createCategories } from "@/actions/actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
 
 const formSchema = z.object({
   categories: z.string().min(2, {
@@ -24,7 +28,8 @@ const formSchema = z.object({
   }),
 });
 
-const CategoriesPage = () => {
+const CreateCategoriesPage = () => {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,8 +37,14 @@ const CategoriesPage = () => {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    const result = await createCategories(values);
+    if (result.success) {
+      router.push("/master-data/categories");
+      toast.success("Categories created successfully!");
+    } else {
+      toast.error(`Error: ${result.error}`);
+    }
   }
 
   return (
@@ -63,7 +74,7 @@ const CategoriesPage = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <ButtonSubmit>Submit</ButtonSubmit>
           </form>
         </Form>
       </ContentWrapper>
@@ -71,4 +82,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default CreateCategoriesPage;
