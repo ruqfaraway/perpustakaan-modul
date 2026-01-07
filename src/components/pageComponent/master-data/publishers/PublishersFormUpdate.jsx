@@ -1,37 +1,36 @@
 "use client";
 
+import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
+import { UpdatePublishers } from "@/actions/master-data/publishers/action";
 import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
 import { toast } from "sonner";
-import { updateCategory } from "@/actions/master-data/categories/action";
 
 const formSchema = z.object({
-  categories: z.string().min(2, {
+  name: z.string().min(2, {
     message: "Categories must be at least 2 characters.",
   }),
+  address: z.string().optional(),
 });
 
-export default function CategoriesForm({
-  categoryId = null,
-  defaultValues = { categories: "" },
+export default function PublishersForm({
+  publisherId = null,
+  defaultValues = { name: "", address: "" },
 }) {
   const router = useRouter();
 
@@ -41,13 +40,15 @@ export default function CategoriesForm({
   });
 
   async function onSubmit(values) {
-    const res = await updateCategory(categoryId, {
-      name: values.categories,
+    console.log('values', values);
+    const res = await UpdatePublishers(publisherId, {
+      name: values.name,
+      address: values.address,
     });
 
     if (res.success) {
       toast.success("Category updated successfully");
-      router.push("/master-data/categories");
+      router.push("/master-data/publishers");
     } else {
       // alert(res.message);
       toast.error(res.message || "Failed to update category");
@@ -62,26 +63,38 @@ export default function CategoriesForm({
           onClick={() => router.back()}
           icon={<ArrowLeft className="h-6 w-6" />}
         />
-        <h1 className="text-2xl font-semibold">Update Categories</h1>
+        <h1 className="text-2xl font-semibold">Update Publishers</h1>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="categories"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Categories</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="categories" {...field} />
+                  <Input placeholder="name" {...field} />
                 </FormControl>
-                <FormDescription>Enter the categories name.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <ButtonSubmit type="submit">Update</ButtonSubmit>
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="address" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <ButtonSubmit type="submit">Update dong</ButtonSubmit>
         </form>
       </Form>
     </ContentWrapper>

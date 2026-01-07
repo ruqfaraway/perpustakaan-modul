@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  LATE
+}
+
+enum BookCopyStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  DAMAGED
+}
+
+// =======================
+// USER & ACCESS CONTROL
+// =======================
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+
+  roles     UserRole[]
+  loans     Loan[]     @relation("ProcessedBy")
+
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  description String?
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// =======================
+// MASTER DATA
+// =======================
+model Category {
+  id    String @id @default(cuid())
+  name  String
+
+  books Book[]
+
+  @@map("categories")
+}
+
+model Publisher {
+  id      String @id @default(cuid())
+  name    String
+  address String?
+
+  books Book[]
+
+  @@map("publishers")
+}
+
+model Author {
+  id   String @id @default(cuid())
+  name String
+  bio  String?
+
+  books BookAuthor[]
+
+  @@map("authors")
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  title       String
+  isbn        String   @unique
+  publishedAt Int
+  createdAt   DateTime @default(now())
+
+  categoryId  String
+  publisherId String
+
+  category   Category   @relation(fields: [categoryId], references: [id])
+  publisher  Publisher  @relation(fields: [publisherId], references: [id])
+
+  authors    BookAuthor[]
+  copies     BookCopy[]
+
+  @@map("books")
+}
+
+model BookAuthor {
+  bookId   String
+  authorId String
+
+  book   Book   @relation(fields: [bookId], references: [id])
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@id([bookId, authorId])
+  @@map("book_authors")
+}
+
+model BookCopy {
+  id       String          @id @default(cuid())
+  bookId   String
+  code     String          @unique
+  status   BookCopyStatus  @default(AVAILABLE)
+
+  book     Book            @relation(fields: [bookId], references: [id])
+  loanItem LoanItem?
+
+  @@map("book_copies")
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  loans Loan[]
+
+  @@map("members")
+}
+
+// =======================
+// TRANSACTION
+// =======================
+model Loan {
+  id          String     @id @default(cuid())
+  memberId    String
+  processedBy String
+  loanDate    DateTime   @default(now())
+  dueDate     DateTime
+  returnDate  DateTime?
+  status      LoanStatus @default(ACTIVE)
+
+  member   Member @relation(fields: [memberId], references: [id])
+  officer  User   @relation("ProcessedBy", fields: [processedBy], references: [id])
+  items    LoanItem[]
+  fine     Fine?
+
+  @@map("loans")
+}
+
+model LoanItem {
+  id          String @id @default(cuid())
+  loanId      String
+  bookCopyId  String @unique
+
+  loan     Loan     @relation(fields: [loanId], references: [id])
+  bookCopy BookCopy @relation(fields: [bookCopyId], references: [id])
+
+  @@map("loan_items")
+}
+
+model Fine {
+  id        String   @id @default(cuid())
+  loanId    String   @unique
+  amount    Int
+  paid      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  loan Loan @relation(fields: [loanId], references: [id])
+
+  @@map("fines")
+}
