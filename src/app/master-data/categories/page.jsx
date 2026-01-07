@@ -1,79 +1,36 @@
-"use client";
-import React, { useState } from "react";
-import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
-import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
-import MainButton from "@/components/CustomUI/MainButton/MainButton";
-import MainTable from "@/components/CustomUI/MainTable/MainTable";
-import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import CategoriesPage from "@/components/pageComponent/master-data/categories/CategoriesPage";
+import prisma from "../../../../lib/prisma";
 
-const CategoriesPage = ({ dataSource = [] }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const router = useRouter();
-
-   const tableData = [
-    { id: 1, name: "Fiction" },
-    { id: 2, name: "Non-Fiction" },
-    { id: 3, name: "Science" },
-    { id: 4, name: "History" },
-  ];
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Action",
-      dataIndex: "action",
-      key: "action",
-      render: (text, record) => {
-        return (
-          <div className="flex gap-2">
-            <MainButton
-              loading={loading}
-              onClick={() =>
-                router.push(`/master-data/categories/detail/${record.id}`)
-              }
-            >
-              Detail
-            </MainButton>
-            <MainButton type="destructive" onClick={() => {}} loading={loading}>
-              Delete
-            </MainButton>
-          </div>
-        );
+export default async function Page({ searchParams }) {
+  const { page = "1", search = "" } = await searchParams;
+  const currentPage = Number(page);
+  const take = 10;
+  const skip = (currentPage - 1) * take;
+  const categories = await prisma.category.findMany({
+    where: {
+      name: {
+        contains: search,
+        mode: "insensitive",
       },
     },
-  ];
+    orderBy: { name: "asc" },
+    take,
+    skip,
+  });
+  const totalCategories = await prisma.category.count({
+    where: {
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    },
+  });
+  const query = {
+    page: currentPage,
+    per_page: Number(take),
+    total: totalCategories,
+    total_page: Math.ceil(totalCategories / take),
+  };
 
-  return (
-    <>
-      <ContentWrapper>
-        {error && (
-          <div className="bg-red-200 p-2 rounded-md flex justify-between items-center">
-            <p className="text-red-500">{error}</p>
-            <ButtonIcon onClick={() => setError(null)} />
-          </div>
-        )}
-        <div className="flex justify-between">
-          <MainButton
-            onClick={() => {
-              router.push("/master-data/categories/add");
-            }}
-          >
-            Add Categories
-          </MainButton>
-          <form className="flex gap-2">
-            <Input placeholder="Search" />
-            <MainButton type="outline">Search</MainButton>
-          </form>
-        </div>
-        <MainTable columns={columns} dataSource={tableData} rowkeys="id" />
-      </ContentWrapper>
-    </>
-  );
-};
-
-export default CategoriesPage;
+  return <CategoriesPage dataSource={categories} query={query} />;
+}

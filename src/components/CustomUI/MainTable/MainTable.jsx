@@ -1,5 +1,7 @@
+"use client";
+
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -29,19 +31,24 @@ const MainTable = ({
   },
 }) => {
   const router = useRouter();
-  const onPaginate = (page) => {
-    router.push({
-      query: {
-        ...router.query,
-        page,
-      }, // query: { page: 1 }
-    });
-  };
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const totalPages = Math.ceil(query.total / query.per_page);
+
+  const onPaginate = (page) => {
+    if (page < 1 || page > totalPages) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
     <>
       <Table>
-        {dataSource.length === 0 && columns.length === 0 && (
+        {dataSource.length === 0 && (
           <TableCaption>No data available</TableCaption>
         )}
         <TableHeader>
@@ -59,15 +66,12 @@ const MainTable = ({
               </TableCell>
             </TableRow>
           )}
-          {dataSource.map((item) => (
-            <TableRow
-              key={item[rowkeys]}
-              onClick={() => onRowClick && onRowClick(item)}
-            >
+          {dataSource.map((item, rowIndex) => (
+            <TableRow key={item[rowkeys]} onClick={() => onRowClick?.(item)}>
               {columns.map((column) => (
                 <TableCell key={column.key}>
                   {column.render
-                    ? column.render(item[column.dataIndex], item)
+                    ? column.render(item[column.dataIndex], item, rowIndex)
                     : item[column.dataIndex]}
                 </TableCell>
               ))}
@@ -75,22 +79,24 @@ const MainTable = ({
           ))}
         </TableBody>
       </Table>
+
       <Pagination className="w-full justify-end">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
               onClick={() => onPaginate(query.page - 1)}
               aria-disabled={query.page <= 1}
-              tabIndex={query.page <= 1 ? -1 : undefined}
-              className={
-                query.page <= 1 ? "pointer-events-none opacity-50" : undefined
-              }
+              className={` cursor-pointer
+                ${
+                  query.page <= 1 ? "pointer-events-none opacity-50" : undefined
+                }`}
             />
           </PaginationItem>
+
           {Array.from({ length: totalPages }, (_, index) => (
             <PaginationItem key={index + 1}>
               <PaginationLink
-                href="#"
+                className="cursor-pointer"
                 onClick={() => onPaginate(index + 1)}
                 isActive={index + 1 === query.page}
               >
@@ -98,16 +104,16 @@ const MainTable = ({
               </PaginationLink>
             </PaginationItem>
           ))}
+
           <PaginationItem>
             <PaginationNext
               onClick={() => onPaginate(query.page + 1)}
               aria-disabled={query.page >= totalPages}
-              tabIndex={query.page >= totalPages ? -1 : undefined}
-              className={
+              className={` cursor-pointer ${
                 query.page >= totalPages
                   ? "pointer-events-none opacity-50"
                   : undefined
-              }
+              }`}
             />
           </PaginationItem>
         </PaginationContent>
