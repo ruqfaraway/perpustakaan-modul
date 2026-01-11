@@ -1,7 +1,6 @@
 "use client";
 
-import { deleteAuthors } from "@/actions/master-data/authors/action";
-import { deletePublisher } from "@/actions/master-data/publishers/action";
+import { deleteBooks } from "@/actions/master-data/books/action";
 import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
 import MainButton from "@/components/CustomUI/MainButton/MainButton";
@@ -14,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { IoSearch } from "react-icons/io5";
 import { toast } from "sonner";
 
-const AuthorPage = ({
+const BooksPage = ({
   dataSource = [],
   query = {
     page: 1,
@@ -26,6 +25,7 @@ const AuthorPage = ({
   const [error, setError] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -34,12 +34,12 @@ const AuthorPage = ({
 
   const handleDelete = async (id) => {
     setLoading(true);
-    const res = await deleteAuthors(id);
+    const res = await deleteBooks(id);
     if (res.success) {
-      toast.success("Data Penulis berhasil dihapus");
+      toast.success("Data Buku berhasil dihapus");
       setLoading(false);
     } else {
-      setError(res.message || "Gagal menghapus data penulis");
+      setError(res.message || "Gagal menghapus data buku");
       setLoading(false);
     }
   };
@@ -55,14 +55,34 @@ const AuthorPage = ({
       },
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Judul Buku",
+      dataIndex: "title",
+      key: "title",
     },
     {
-      title: "Bio",
-      dataIndex: "bio",
-      key: "bio",
+      title: "ISBN",
+      dataIndex: "isbn",
+      key: "isbn",
+    },
+    {
+      title: "Tahun Terbit",
+      dataIndex: "publishedAt",
+      key: "publishedAt",
+    },
+    {
+      title: "Penulis",
+      dataIndex: "author",
+      key: "author",
+    },
+    {
+      title: "Penerbit",
+      dataIndex: "publisher",
+      key: "publisher",
+    },
+    {
+      title: "Stock",
+      dataIndex: "stock",
+      key: "stock",
     },
     {
       title: "Action",
@@ -72,7 +92,7 @@ const AuthorPage = ({
           <MainButton
             loading={loading}
             onClick={() =>
-              router.push(`/master-data/authors/detail/${record.id}`)
+              router.push(`/master-data/books/detail/${record.id}`)
             }
           >
             Detail
@@ -116,16 +136,16 @@ const AuthorPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/authors/add")}>
-          Add Authors
+        <MainButton onClick={() => router.push("/master-data/books/add")}>
+          Add Books
         </MainButton>
-        {isMounted && (
+        {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
               <FormField
                 control={form.control}
                 name="search"
-                render={({ field }) => ( 
+                render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Input placeholder="search" {...field} />
@@ -138,7 +158,6 @@ const AuthorPage = ({
           </Form>
         )}
       </div>
-
       <MainTable
         columns={columns}
         dataSource={dataSource}
@@ -149,4 +168,4 @@ const AuthorPage = ({
   );
 };
 
-export default AuthorPage;
+export default BooksPage;

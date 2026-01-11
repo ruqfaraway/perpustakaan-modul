@@ -13,11 +13,26 @@ datasource db {
   provider = "postgresql"
 }
 
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  LATE
+}
+
+enum BookCopyStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  DAMAGED
+}
+
 model Category {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  books Book[]
 
   @@map("categories")
 }
@@ -29,6 +44,8 @@ model Publisher {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  books Book[]
+
   @@map("publishers")
 }
 
@@ -39,5 +56,52 @@ model Author {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  books BookAuthor[]
+
   @@map("authors")
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  title       String
+  isbn        String   @unique
+  publishedAt Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId  String
+  publisherId String
+
+  category  Category  @relation(fields: [categoryId], references: [id])
+  publisher Publisher @relation(fields: [publisherId], references: [id])
+
+  authors BookAuthor[]
+  copies  BookCopy[]
+
+  @@map("books")
+}
+
+model BookAuthor {
+  bookId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  book   Book   @relation(fields: [bookId], references: [id] , onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@id([bookId, authorId])
+  @@map("book_authors")
+}
+
+model BookCopy {
+  id        String         @id @default(cuid())
+  bookId    String
+  code      String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  status    BookCopyStatus @default(AVAILABLE)
+  book      Book           @relation(fields: [bookId], references: [id])
+
+  @@map("book_copies")
 }

@@ -7,7 +7,7 @@ import MainTable from "@/components/CustomUI/MainTable/MainTable";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
@@ -25,6 +25,12 @@ const CategoriesPage = ({
   const [error, setError] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleDelete = async (id) => {
     setLoading(true);
@@ -109,24 +115,24 @@ const CategoriesPage = ({
         <MainButton onClick={() => router.push("/master-data/categories/add")}>
           Add Categories
         </MainButton>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
-            <FormField
-              control={form.control}
-              name="search"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="search" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <ButtonIcon icon={<IoSearch />} type="submit">
-              Search
-            </ButtonIcon>
-          </form>
-        </Form>
+        {isMounted && ( // Bungkus form dengan isMounted
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="search"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="search" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <ButtonIcon icon={<IoSearch />} type="submit" text="Search" />
+            </form>
+          </Form>
+        )}
       </div>
 
       <MainTable

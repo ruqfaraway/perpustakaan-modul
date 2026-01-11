@@ -8,7 +8,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,7 @@ import { z } from "zod";
 import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
 import { toast } from "sonner";
 import { updateAuthors } from "@/actions/master-data/authors/action";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -54,15 +55,31 @@ export default function AuthorsForm({
     }
   }
 
+  const link = {
+    update: `/master-data/authors/detail/${authorId}`,
+    bookList: `/master-data/authors/detail/${authorId}/book-list`,
+  };
+
   return (
     <ContentWrapper>
+      <Tabs defaultValue={link.update} className="w-100">
+        <TabsList>
+          <TabsTrigger value={link.update}>Update Books</TabsTrigger>
+          <TabsTrigger
+            value={link.bookList}
+            onClick={() => router.push(link.bookList)}
+          >
+            Book List
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       <div className="flex gap-4 items-center">
         <ButtonIcon
           variant="standart"
-          onClick={() => router.back()}
+          onClick={() => router.push("/master-data/authors")}
           icon={<ArrowLeft className="h-6 w-6" />}
         />
-        <h1 className="text-2xl font-semibold">Update Author</h1>
+        <h1 className="text-2xl font-semibold">Detail Author</h1>
       </div>
 
       <Form {...form}>

@@ -5,19 +5,23 @@ export default function ButtonIcon({
   onClick = () => {},
   icon = <AiFillCloseCircle className="h-4 w-4" />,
   text,
+  className, // Tambahin props ini biar bisa custom style dari luar
   ...props
 }) {
   return (
     <Button
-      className="cursor-pointer"
+      className={className}
+      // Kalau ada text, jangan pakai size="icon"
+      // Kalau cuma icon doang, baru pakai size="icon"
+      size={text ? "default" : "icon"}
       variant="outline"
-      size="icon"
       onClick={onClick}
       {...props}
     >
-      <span className="flex gap-2 justify-center items-center">
-        {icon} {text}
-      </span>
+      <div className="flex gap-2 justify-center items-center">
+        {icon}
+        {text && <span>{text}</span>}
+      </div>
     </Button>
   );
 }
