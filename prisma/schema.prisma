@@ -105,3 +105,14 @@ model BookCopy {
 
   @@map("book_copies")
 }
+
+model Member {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("members")
+}
