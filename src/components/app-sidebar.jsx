@@ -26,6 +26,30 @@ import { IoLibrary } from "react-icons/io5";
 const data = {
   navMain: [
     {
+      title: "Dashboard",
+      url: "/dashboard",
+      items: [
+        {
+          title: "Overview",
+          url: "/dashboard",
+        },
+      ],
+    },
+    {
+      title: "User Access Management",
+      url: "#",
+      items: [
+        {
+          title: "User Management",
+          url: "/uam/users",
+        },
+        {
+          title: "Roles",
+          url: "/uam/roles",
+        },
+      ],
+    },
+    {
       title: "Master Data",
       url: "#",
       items: [
