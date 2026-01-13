@@ -12,8 +12,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
 import { deleteCategory } from "@/actions/master-data/categories/action";
+import { deleteRoles } from "@/actions/uam/roles/action";
 
-const RolesPage = ({
+const RolesPages = ({
   dataSource = [],
   query = {
     page: 1,
@@ -34,12 +35,12 @@ const RolesPage = ({
 
   const handleDelete = async (id) => {
     setLoading(true);
-    const res = await deleteCategory(id);
+    const res = await deleteRoles(id);
     if (res.success) {
-      toast.success("Kategori berhasil dihapus");
+      toast.success("Data role berhasil dihapus");
       setLoading(false);
     } else {
-      setError(res.message || "Gagal menghapus kategori");
+      setError(res.message || "Gagal menghapus data role");
       setLoading(false);
     }
   };
@@ -61,6 +62,11 @@ const RolesPage = ({
       key: "name",
     },
     {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (
@@ -68,7 +74,7 @@ const RolesPage = ({
           <MainButton
             loading={loading}
             onClick={() =>
-              router.push(`/master-data/categories/detail/${record.id}`)
+              router.push(`/uam/roles/detail/${record.id}`)
             }
           >
             Detail
@@ -112,8 +118,8 @@ const RolesPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/categories/add")}>
-          Add Categories
+        <MainButton onClick={() => router.push("/uam/roles/add")}>
+          Add Roles
         </MainButton>
         {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>

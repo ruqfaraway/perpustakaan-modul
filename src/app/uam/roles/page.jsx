@@ -1,12 +1,13 @@
 import CategoriesPage from "@/components/pageComponent/master-data/categories/CategoriesPage";
 import prisma from "../../../../lib/prisma";
+import RolesPages from "@/components/pageComponent/uam/roles/RolesPage";
 
 export default async function Page({ searchParams }) {
   const { page = "1", search = "" } = await searchParams;
   const currentPage = Number(page);
   const take = 10;
   const skip = (currentPage - 1) * take;
-  const categories = await prisma.category.findMany({
+  const roles = await prisma.role.findMany({
     where: {
       name: {
         contains: search,
@@ -17,7 +18,7 @@ export default async function Page({ searchParams }) {
     take,
     skip,
   });
-  const totalCategories = await prisma.category.count({
+  const totalRoles = await prisma.role.count({
     where: {
       name: {
         contains: search,
@@ -28,9 +29,9 @@ export default async function Page({ searchParams }) {
   const query = {
     page: currentPage,
     per_page: Number(take),
-    total: totalCategories,
-    total_page: Math.ceil(totalCategories / take),
+    total: totalRoles,
+    total_page: Math.ceil(totalRoles / take),
   };
 
-  return <CategoriesPage dataSource={categories} query={query} />;
+  return <RolesPages dataSource={roles} query={query} />;
 }
