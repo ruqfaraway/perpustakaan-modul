@@ -1,41 +1,54 @@
 "use client";
 
+import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
-import { toast } from "sonner";
-import { updateCategory } from "@/actions/master-data/categories/action";
 import { updateUser } from "@/actions/uam/users/action";
+import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
+import { MultiSelect } from "@/components/CustomUI/MultiSelect/MultiSelect";
+import { toast } from "sonner";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
+  name: z
+    .string()
+    .min(2, {
+      message: "Name must be at least 2 characters.",
+    })
+    .regex(
+      /^[a-z0-9_]+$/,
+      "Nama role hanya boleh huruf kecil, angka, dan underscore (_) tanpa spasi"
+    ),
+  username: z
+    .string()
+    .min(3, "Username minimal 3 karakter")
+    .regex(
+      /^[a-z0-9_]+$/,
+      "Username hanya boleh huruf kecil, angka, dan underscore tanpa spasi"
+    ),
   email: z.string().email({
     message: "Invalid email address.",
   }),
+  roles: z.array(z.string()).optional(),
 });
 
 export default function UserUpdateForm({
   userId = null,
-  defaultValues = { name: "", email: "" },
+  defaultValues = { name: "", email: "", username: "", roles: [] },
+  roleList = [],
 }) {
   const router = useRouter();
 
@@ -47,14 +60,15 @@ export default function UserUpdateForm({
   async function onSubmit(values) {
     const res = await updateUser(userId, {
       name: values.name,
+      username: values.username,
       email: values.email,
+      roles: values.roles || [],
     });
 
     if (res.success) {
       toast.success("User updated successfully");
       router.push("/uam/users");
     } else {
-      // alert(res.message);
       toast.error(res.message || "Failed to update user");
     }
   }
@@ -87,6 +101,19 @@ export default function UserUpdateForm({
           />
           <FormField
             control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="username" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -97,6 +124,12 @@ export default function UserUpdateForm({
                 <FormMessage />
               </FormItem>
             )}
+          />
+          <MultiSelect
+            control={form.control}
+            name="roles"
+            label="Roles"
+            options={roleList}
           />
           <ButtonSubmit type="submit">Update</ButtonSubmit>
         </form>

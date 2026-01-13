@@ -1,42 +1,46 @@
 "use client";
 
+import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
-import { toast } from "sonner";
-import { updateCategory } from "@/actions/master-data/categories/action";
-import { updateUser } from "@/actions/uam/users/action";
 import { updateRoles } from "@/actions/uam/roles/action";
+import ButtonSubmit from "@/components/CustomUI/ButtonSubmit/ButtonSubmit";
+import { MultiCheckBoxField } from "@/components/CustomUI/MultiCheckbox/MultiCheckbox";
+import { toast } from "sonner";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
+  name: z
+    .string()
+    .min(2, {
+      message: "Name must be at least 2 characters.",
+    })
+    .max(30, "Nama role maksimal 30 karakter")
+    .regex(/^[A-Z0-9_]+$/, "Gunakan huruf kapital dan underscore")
+    .transform((val) => val.toUpperCase()),
   description: z.string().min(5, {
     message: "Description must be at least 5 characters.",
   }),
+  permissions: z.array(z.string()).optional(),
 });
 
 export default function RolesFormUpdate({
   roleId = null,
-  defaultValues = { name: "", description: "" },
+  permissionsList = [],
+  defaultValues = { name: "", description: "", permissions: [] },
 }) {
   const router = useRouter();
 
@@ -49,6 +53,7 @@ export default function RolesFormUpdate({
     const res = await updateRoles(roleId, {
       name: values.name,
       description: values.description,
+      permissions: values.permissions,
     });
 
     if (res.success) {
@@ -80,7 +85,19 @@ export default function RolesFormUpdate({
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="name" {...field} />
+                  <Input
+                    placeholder="name"
+                    {...field}
+                    className="uppercase"
+                    onChange={(e) => {
+                      // Ubah spasi jadi underscore dan paksa uppercase
+                      const val = e.target.value
+                        .toUpperCase()
+                        .replace(/\s+/g, "_")
+                        .replace(/[^A-Z0-9_]/g, "");
+                      field.onChange(val);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -98,6 +115,13 @@ export default function RolesFormUpdate({
                 <FormMessage />
               </FormItem>
             )}
+          />
+
+          <MultiCheckBoxField
+            control={form.control}
+            name="permissions"
+            label="Permissions"
+            options={permissionsList}
           />
           <ButtonSubmit type="submit">Update</ButtonSubmit>
         </form>

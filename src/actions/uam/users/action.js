@@ -5,28 +5,42 @@ import bcrypt from "bcrypt";
 
 export const createUser = async (data) => {
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.email },
+    const { name, username, email, password, roles } = data;
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: email }, { username: username }],
+      },
     });
+
     if (existingUser) {
+      const field = existingUser.email === email ? "Email" : "Username";
       return {
         success: false,
-        message: "Email sudah digunakan, silakan gunakan email lain.",
+        message: `${field} sudah digunakan, silakan gunakan yang lain.`,
       };
     }
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const result = await prisma.user.create({
       data: {
-        name: data.name,
-        email: data.email,
+        name,
+        username,
+        email,
         password: hashedPassword,
+        // Menghubungkan ke tabel UserRole (Many-to-Many)
+        roles: {
+          create: roles.map((id) => ({
+            role: {
+              connect: { id: id },
+            },
+          })),
+        },
       },
     });
 
     revalidatePath("/uam/users");
     return {
       success: true,
-      data: result,
+      data: { id: result.id, email: result.email },
       message: "Data User berhasil dibuat",
     };
   } catch (error) {
@@ -41,52 +55,59 @@ export const createUser = async (data) => {
 
 export const updateUser = async (id, data) => {
   try {
-    if (!id) {
-      throw new Error("ID user tidak ditemukan");
-    }
+    if (!id) throw new Error("ID user tidak ditemukan");
 
-    if (!data?.name) {
-      throw new Error("Nama user wajib diisi");
-    }
+    const { name, username, email, password, roles } = data;
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: {
-        email: data.email,
-        NOT: {
-          id: id,
-        },
+        OR: [{ email: email }, { username: username }],
+        NOT: { id: id },
       },
     });
+
     if (existingUser) {
+      const conflict = existingUser.email === email ? "Email" : "Username";
       return {
         success: false,
-        message: "Email sudah digunakan, silakan gunakan email lain.",
+        message: `${conflict} sudah digunakan oleh petugas lain.`,
       };
     }
 
+    const updateData = {
+      name,
+      username,
+      email,
+      roles: {
+        // Reset roles lama dan pasang yang baru
+        deleteMany: {},
+        create: roles.map((rId) => ({
+          role: { connect: { id: rId } },
+        })),
+      },
+    };
+
+    if (password && password.trim() !== "") {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
     const result = await prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        name: data.name,
-        email: data.email,
-      },
+      where: { id },
+      data: updateData,
     });
 
     revalidatePath("/uam/users");
 
     return {
       success: true,
-      data: result,
-      message: "User berhasil diperbarui",
+      data: { id: result.id, email: result.email },
+      message: "Data petugas berhasil diperbarui",
     };
   } catch (error) {
     console.error("Gagal update user:", error);
-
     return {
       success: false,
-      message: "Gagal memperbarui user",
+      message: "Gagal memperbarui data user",
       error: error.message,
     };
   }
@@ -98,10 +119,40 @@ export const deleteUser = async (id) => {
       throw new Error("ID user tidak ditemukan");
     }
 
-    await prisma.user.delete({
-      where: {
-        id,
+    // 1. Cek apakah user ini adalah 'SUPER_ADMIN' atau diri sendiri (opsional)
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        roles: {
+          include: { role: true },
+        },
       },
+    });
+
+    if (!user) throw new Error("User tidak ditemukan");
+
+    const isSuperAdmin = user.roles.some((r) => r.role.name === "SUPER_ADMIN");
+    if (isSuperAdmin) {
+      throw new Error("User dengan role SUPER_ADMIN tidak dapat dihapus!");
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.userRole.deleteMany({
+        where: { userId: id },
+      });
+
+      // const hasTransactions = await tx.loan.findFirst({
+      //   where: { processedBy: id },
+      // });
+
+      // if (hasTransactions) {
+      //   throw new Error(
+      //     "User tidak bisa dihapus karena sudah memiliki riwayat transaksi peminjaman. Gunakan fitur 'Nonaktifkan' saja."
+      //   );
+      // }
+
+      await tx.user.delete({
+        where: { id },
+      });
     });
 
     revalidatePath("/uam/users");

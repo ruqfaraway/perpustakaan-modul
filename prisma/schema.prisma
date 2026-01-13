@@ -29,6 +29,7 @@ enum BookCopyStatus {
 model User {
   id        String   @id @default(cuid())
   name      String
+  username  String   @unique
   email     String   @unique
   password  String
   createdAt DateTime @default(now())

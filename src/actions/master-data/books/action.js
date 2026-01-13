@@ -64,17 +64,10 @@ export async function updateBooks(id, data) {
         title: data.title,
         isbn: data.isbn,
         publishedAt: parseInt(data.publishedAt),
-
-        // Update relasi 1-to-Many (Category & Publisher)
-        // Cukup masukkan ID baru, Prisma otomatis menggantinya
         categoryId: data.category,
         publisherId: data.publisher,
-
-        // Update relasi Many-to-Many (Author)
         authors: {
-          // Langkah 1: Hapus dulu semua koneksi penulis lama untuk buku ini
           deleteMany: {},
-          // Langkah 2: Buat koneksi baru dengan penulis yang dipilih di form
           create: [
             {
               author: {
