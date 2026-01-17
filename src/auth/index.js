@@ -12,6 +12,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub;
         session.user.username = token.username;
         session.user.permissions = token.permissions;
+        session.user.roles = token.roles;
       }
       return session;
     },
@@ -35,11 +36,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       });
       if (!existingUser) return token;
+
+      const roles = existingUser.roles.map((ur) => ur.role.name);
       // Flatting permissions agar jadi array string sederhana: ["BOOK_CREATE", "USER_DELETE"]
       const permissions = existingUser.roles.flatMap((ur) =>
-        ur.role.permissions.map((rp) => rp.permission.code)
+        ur.role.permissions.map((rp) => rp.permission.code),
       );
       token.username = existingUser.username;
+      token.roles = roles;
       token.permissions = Array.from(new Set(permissions)); // Hilangkan duplikat
       return token;
     },

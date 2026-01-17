@@ -75,6 +75,20 @@ const data = {
         },
       ],
     },
+    {
+      title: "Loans & Fines",
+      url: "#",
+      items: [
+        {
+          title: "Loans",
+          url: "/transaction/loans",
+        },
+        {
+          title: "Fines",
+          url: "/transaction/fines",
+        },
+      ],
+    },
   ],
 };
 

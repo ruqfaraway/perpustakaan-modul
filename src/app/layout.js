@@ -17,15 +17,28 @@ export const metadata = {
 };
 
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/authContext";
+import { auth } from "@/auth";
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await auth(); // Ambil session di server
+
+  // Data user yang dikirim: { name: "Admin", role: "OFFICER" }
+  const userData = session?.user
+    ? {
+        name: session.user.name,
+        role: session.user.roles,
+      }
+    : null;
+
+    
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster />
-        {children}
+        <AuthProvider initialUser={userData}>{children}</AuthProvider>
       </body>
     </html>
   );

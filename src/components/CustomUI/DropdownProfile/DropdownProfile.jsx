@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/authContext";
 import React from "react";
 import { toast } from "sonner";
 
@@ -18,15 +19,24 @@ const DropdownProfile = () => {
     await LogoutAction();
     toast.success("Logout successful");
   };
+  const { user } = useAuth();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none" asChild>
+      <DropdownMenuTrigger
+        className="focus:outline-none cursor-pointer"
+        asChild
+      >
         <div className="flex items-center space-x-2">
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">User</span>
+          <div className="flex flex-col border p-2 rounded-sm">
+            <span className="text-sm font-bold">{user?.name || "Guest"}</span>
+            <span className="text-sm font-normal">
+              {user?.role.join("-") || "No Role"}
+            </span>
+          </div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

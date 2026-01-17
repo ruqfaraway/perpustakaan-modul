@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 
 export default function RootLayout({ children }) {
+  
   return (
     <SidebarProvider>
       <AppSidebar />

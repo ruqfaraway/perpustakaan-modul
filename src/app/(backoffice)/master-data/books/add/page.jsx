@@ -1,6 +1,5 @@
-import BooksPage from "@/components/pageComponent/master-data/books/BooksPage";
-import prisma from "../../../../../lib/prisma";
 import CreateBookPage from "@/components/pageComponent/master-data/books/BooksFormAdd";
+import prisma from "../../../../../lib/prisma";
 
 export default async function Page() {
   const authorsData = await prisma.author.findMany();

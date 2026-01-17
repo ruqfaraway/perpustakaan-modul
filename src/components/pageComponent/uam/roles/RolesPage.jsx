@@ -80,7 +80,7 @@ const RolesPages = ({
             Detail
           </MainButton>
           <MainButton
-            type="destructive"
+            variant="destructive"
             loading={loading}
             onClick={() => handleDelete(record.id)}
           >

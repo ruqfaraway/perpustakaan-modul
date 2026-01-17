@@ -65,7 +65,7 @@ const BookCopiesPage = ({
       render: (_, record) => (
         <div className="flex gap-2">
           <MainButton
-            type="destructive"
+            variant="destructive"
             loading={loading}
             onClick={() => handleDelete(bookId, record.id)}
           >

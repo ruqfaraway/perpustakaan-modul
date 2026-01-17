@@ -3,21 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 const MainButton = ({
-  type = "primary",
+  variant = "default",
+  size = "sm",
   children,
   onClick,
   disabled,
   loading,
-  htmlType = null,
+  type = "button",
   className,
 }) => {
   return (
     <Button
-      variant={type === "primary" ? "" : type}
+      variant={variant}
       onClick={onClick}
+      size={size}
       disabled={disabled || loading}
-      htmltype={htmlType}
-      className={`${className} flex items-center justify-center gap-2 cursor-pointer  rounded-md text-sm font-medium px-2 py-2`}
+      type={type}
+      className={`${className} flex items-center justify-center gap-2 cursor-pointer rounded-md text-md font-semibold`}
     >
       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {children}

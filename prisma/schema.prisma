@@ -36,12 +36,14 @@ model User {
   updatedAt DateTime @updatedAt
 
   roles UserRole[]
+  loans Loan[]     @relation("ProcessedBy")
 
   @@map("users")
 }
+
 model Role {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -53,8 +55,8 @@ model Role {
 }
 
 model Permission {
-  id          String  @id @default(cuid())
-  code        String  @unique
+  id          String   @id @default(cuid())
+  code        String   @unique
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -65,8 +67,8 @@ model Permission {
 }
 
 model UserRole {
-  userId String
-  roleId String
+  userId    String
+  roleId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -165,7 +167,9 @@ model BookCopy {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   status    BookCopyStatus @default(AVAILABLE)
+  
   book      Book           @relation(fields: [bookId], references: [id])
+  loanItem LoanItem[]
 
   @@map("book_copies")
 }
@@ -178,5 +182,52 @@ model Member {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  loans Loan[]
+
   @@map("members")
+}
+
+model Loan {
+  id          String     @id @default(cuid())
+  memberId    String
+  processedBy String
+  loanDate    DateTime   @default(now())
+  dueDate     DateTime
+  returnDate  DateTime?
+  status      LoanStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  member  Member     @relation(fields: [memberId], references: [id])
+  officer User       @relation("ProcessedBy", fields: [processedBy], references: [id])
+  items   LoanItem[]
+  fine    Fine?
+
+  @@map("loans")
+}
+
+model LoanItem {
+  id         String   @id @default(cuid())
+  loanId     String
+  bookCopyId String  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  loan     Loan     @relation(fields: [loanId], references: [id])
+  bookCopy BookCopy @relation(fields: [bookCopyId], references: [id])
+
+  @@map("loan_items")
+}
+
+model Fine {
+  id        String   @id @default(cuid())
+  loanId    String   @unique
+  amount    Int
+  paid      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loan Loan @relation(fields: [loanId], references: [id])
+
+  @@map("fines")
 }

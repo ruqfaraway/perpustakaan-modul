@@ -1,6 +1,5 @@
 "use client";
 
-import { deletePublisher } from "@/actions/master-data/publishers/action";
 import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
 import MainButton from "@/components/CustomUI/MainButton/MainButton";
@@ -10,10 +9,23 @@ import { Input } from "@/components/ui/input";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoSearch } from "react-icons/io5";
 import { toast } from "sonner";
+import { IoSearch } from "react-icons/io5";
+import { deleteCategory } from "@/actions/master-data/categories/action";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { processFines } from "@/actions/transaction/action";
 
-const PublishersPage = ({
+const FinesPage = ({
   dataSource = [],
   query = {
     page: 1,
@@ -25,6 +37,8 @@ const PublishersPage = ({
   const [error, setError] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [selectedFine, setSelectedFine] = useState([]);
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -32,17 +46,22 @@ const PublishersPage = ({
     setIsMounted(true);
   }, []);
 
-  const handleDelete = async (id) => {
+  const handlePayFine = async (id) => {
     setLoading(true);
-    const res = await deletePublisher(id);
-    if (res.success) {
-      toast.success("Penerbit berhasil dihapus");
-      setLoading(false);
-    } else {
-      setError(res.message || "Gagal menghapus penerbit");
+    try {
+      const res = await processFines(id);
+      if (res.success) {
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      toast.error("Terjadi kesalahan saat memproses pembayaran");
+    } finally {
       setLoading(false);
     }
   };
+
   const columns = [
     {
       title: "No",
@@ -55,35 +74,47 @@ const PublishersPage = ({
       },
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Member Name",
+      dataIndex: "memberName",
+      key: "memberName",
     },
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => (
+        <p className="text-md font-semibold text-red-400">Rp. {amount}</p>
+      ),
+    },
+    {
+      title: "Paid Status",
+      dataIndex: "paid",
+      key: "paid",
+      render: (paid) =>
+        paid ? (
+          <Badge className="bg-green-500 hover:bg-green-600 text-white border-none">
+            Paid
+          </Badge>
+        ) : (
+          <Badge variant="destructive" className="animate-pulse">
+            Unpaid
+          </Badge>
+        ),
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <MainButton
-            loading={loading}
-            onClick={() =>
-              router.push(`/master-data/publishers/detail/${record.id}`)
-            }
-          >
-            Detail
-          </MainButton>
-          <MainButton
-            variant="destructive"
-            loading={loading}
-            onClick={() => handleDelete(record.id)}
-          >
-            Delete
-          </MainButton>
+          {!record.paid && (
+            <MainButton
+              loading={loading}
+              onClick={() => handlePayFine(record.id)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Mark as Paid
+            </MainButton>
+          )}
         </div>
       ),
     },
@@ -97,8 +128,6 @@ const PublishersPage = ({
   const onSubmit = (data) => {
     const params = new URLSearchParams();
     params.set("search", data.search);
-
-    // Pushes the new URL, e.g., /shop?category=shoes&sort=price-asc
     if (data.search) {
       router.push(`${pathname}?${params.toString()}`);
     } else {
@@ -116,9 +145,9 @@ const PublishersPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/publishers/add")}>
-          Add Publishers
-        </MainButton>
+        <div>
+          <p className="text-2xl font-bold ">Fines</p>
+        </div>
         {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
@@ -138,7 +167,6 @@ const PublishersPage = ({
           </Form>
         )}
       </div>
-
       <MainTable
         columns={columns}
         dataSource={dataSource}
@@ -149,4 +177,4 @@ const PublishersPage = ({
   );
 };
 
-export default PublishersPage;
+export default FinesPage;
