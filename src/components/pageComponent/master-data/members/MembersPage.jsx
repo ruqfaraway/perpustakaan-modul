@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
 import { deleteCategory } from "@/actions/master-data/categories/action";
 import { deleteMember } from "@/actions/master-data/members/action";
+import { HasPermission } from "@/lib/HasPermisssion";
 
 const MembersPage = ({
   dataSource = [],
@@ -76,21 +77,35 @@ const MembersPage = ({
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <MainButton
-            loading={loading}
-            onClick={() =>
-              router.push(`/master-data/members/detail/${record.id}`)
+          <HasPermission
+            code="member:manage"
+            fallback={<MainButton disabled>Detail</MainButton>}
+          >
+            <MainButton
+              loading={loading}
+              onClick={() =>
+                router.push(`/master-data/members/detail/${record.id}`)
+              }
+            >
+              Detail
+            </MainButton>
+          </HasPermission>
+          <HasPermission
+            code="member:manage"
+            fallback={
+              <MainButton variant="destructive" disabled>
+                Delete
+              </MainButton>
             }
           >
-            Detail
-          </MainButton>
-          <MainButton
-            variant="destructive"
-            loading={loading}
-            onClick={() => handleDelete(record.id)}
-          >
-            Delete
-          </MainButton>
+            <MainButton
+              variant="destructive"
+              loading={loading}
+              onClick={() => handleDelete(record.id)}
+            >
+              Delete
+            </MainButton>
+          </HasPermission>
         </div>
       ),
     },
@@ -123,9 +138,14 @@ const MembersPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/members/add")}>
-          Add Member
-        </MainButton>
+        <HasPermission
+          code="member:manage"
+          fallback={<MainButton disabled>Add Member</MainButton>}
+        >
+          <MainButton onClick={() => router.push("/master-data/members/add")}>
+            Add Member
+          </MainButton>
+        </HasPermission>
         {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">

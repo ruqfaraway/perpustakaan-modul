@@ -1,8 +1,6 @@
-import * as React from "react";
+"use client";
 import { ChevronRight } from "lucide-react";
 
-import { SearchForm } from "@/components/search-form";
-import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,7 +18,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/lib/authContext";
 import { IoLibrary } from "react-icons/io5";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // This is sample data.
 const data = {
@@ -32,6 +33,7 @@ const data = {
         {
           title: "Overview",
           url: "/dashboard",
+          permission: "dashboard:view",
         },
       ],
     },
@@ -42,10 +44,12 @@ const data = {
         {
           title: "User Management",
           url: "/uam/users",
+          permission: "user:view",
         },
         {
           title: "Roles",
           url: "/uam/roles",
+          permission: "role:manage",
         },
       ],
     },
@@ -56,22 +60,27 @@ const data = {
         {
           title: "Categories",
           url: "/master-data/categories",
+          permission: "category:view",
         },
         {
           title: "Publishers",
           url: "/master-data/publishers",
+          permission: "publisher:view",
         },
         {
           title: "Authors",
           url: "/master-data/authors",
+          permission: "author:view",
         },
         {
           title: "Books",
           url: "/master-data/books",
+          permission: "book:view",
         },
         {
           title: "Members",
           url: "/master-data/members",
+          permission: "member:view",
         },
       ],
     },
@@ -82,10 +91,23 @@ const data = {
         {
           title: "Loans",
           url: "/transaction/loans",
+          permission: "loan:view",
         },
         {
           title: "Fines",
           url: "/transaction/fines",
+          permission: "fine:view",
+        },
+      ],
+    },
+    {
+      title: "Reports",
+      url: "#",
+      items: [
+        {
+          title: "Report",
+          url: "/reports",
+          permission: "report:view",
         },
       ],
     },
@@ -93,17 +115,43 @@ const data = {
 };
 
 export function AppSidebar({ ...props }) {
+  const { user } = useAuth();
+  const userPermissions = user?.permissions || [];
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <Sidebar {...props} />;
+  }
+  const canView = (permissionCode) => {
+    if (!permissionCode) return true;
+    return userPermissions.includes(permissionCode);
+  };
+
+  const filteredNavMain = data.navMain
+    .map((group) => {
+      const allowedItems = group.items.filter((item) =>
+        canView(item.permission),
+      );
+      return { ...group, items: allowedItems };
+    })
+    .filter((group) => group.items.length > 0);
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <div className="flex gap-3 items-center text-2xl font-bold justify-center">
           <IoLibrary />
-          <p className="text-green-600">Perpustakaan</p>
+          <a className="text-green-600" href="/dashboard">
+            Perpustakaan
+          </a>
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-0">
         {/* We create a collapsible SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
+        {filteredNavMain.map((item) => (
           <Collapsible
             key={item.title}
             title={item.title}

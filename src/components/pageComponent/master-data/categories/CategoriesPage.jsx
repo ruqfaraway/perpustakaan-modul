@@ -12,6 +12,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
 import { deleteCategory } from "@/actions/master-data/categories/action";
+import { HasPermission } from "@/lib/HasPermisssion";
+import { Button } from "@/components/ui/button";
 
 const CategoriesPage = ({
   dataSource = [],
@@ -65,21 +67,35 @@ const CategoriesPage = ({
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <MainButton
-            loading={loading}
-            onClick={() =>
-              router.push(`/master-data/categories/detail/${record.id}`)
+          <HasPermission
+            code="category:manage"
+            fallback={<MainButton disabled>Detail</MainButton>}
+          >
+            <MainButton
+              loading={loading}
+              onClick={() =>
+                router.push(`/master-data/categories/detail/${record.id}`)
+              }
+            >
+              Detail
+            </MainButton>
+          </HasPermission>
+          <HasPermission
+            code="category:manage"
+            fallback={
+              <MainButton variant="destructive" disabled>
+                Delete
+              </MainButton>
             }
           >
-            Detail
-          </MainButton>
-          <MainButton
-            variant="destructive"
-            loading={loading}
-            onClick={() => handleDelete(record.id)}
-          >
-            Delete
-          </MainButton>
+            <MainButton
+              variant="destructive"
+              loading={loading}
+              onClick={() => handleDelete(record.id)}
+            >
+              Delete
+            </MainButton>
+          </HasPermission>
         </div>
       ),
     },
@@ -112,9 +128,16 @@ const CategoriesPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/categories/add")}>
-          Add Categories
-        </MainButton>
+        <HasPermission
+          code="category:manage"
+          fallback={<MainButton disabled>Add Categories</MainButton>}
+        >
+          <MainButton
+            onClick={() => router.push("/master-data/categories/add")}
+          >
+            Add Categories
+          </MainButton>
+        </HasPermission>
         {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">

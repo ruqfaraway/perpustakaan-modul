@@ -46,7 +46,7 @@ const LoginForm = ({ className, ...props }) => {
     const result = await LoginAction(values);
     if (result?.success) {
       toast.success(result.message);
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
       router.refresh();
     } else {
       toast.error(result?.message || "Login gagal!");

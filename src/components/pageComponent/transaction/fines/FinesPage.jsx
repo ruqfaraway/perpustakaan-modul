@@ -1,29 +1,19 @@
 "use client";
 
+import { processFines } from "@/actions/transaction/action";
 import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
 import MainButton from "@/components/CustomUI/MainButton/MainButton";
 import MainTable from "@/components/CustomUI/MainTable/MainTable";
+import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { HasPermission } from "@/lib/HasPermisssion";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { IoSearch } from "react-icons/io5";
-import { deleteCategory } from "@/actions/master-data/categories/action";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { processFines } from "@/actions/transaction/action";
+import { toast } from "sonner";
 
 const FinesPage = ({
   dataSource = [],
@@ -107,13 +97,18 @@ const FinesPage = ({
       render: (_, record) => (
         <div className="flex gap-2">
           {!record.paid && (
-            <MainButton
-              loading={loading}
-              onClick={() => handlePayFine(record.id)}
-              className="bg-green-600 hover:bg-green-700 text-white"
+            <HasPermission
+              code="fine:manage"
+              fallback={<MainButton disabled>Mark as Paid</MainButton>}
             >
-              Mark as Paid
-            </MainButton>
+              <MainButton
+                loading={loading}
+                onClick={() => handlePayFine(record.id)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Mark as Paid
+              </MainButton>
+            </HasPermission>
           )}
         </div>
       ),

@@ -36,7 +36,7 @@ export const addMultipleBooks = async (data) => {
   }
 };
 
-export const deleteBookCopies = async (bookId, id) => {
+export const deleteBookCopies = async (id, bookId) => {
   try {
     if (!id) {
       throw new Error("ID buku tidak ditemukan");

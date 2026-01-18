@@ -33,7 +33,7 @@ export const LoginAction = async (data) => {
 export const LogoutAction = async () => {
   try {
     await signOut({
-      redirectTo: "/login", // Arahkan ke halaman login setelah logout
+      redirectTo: "/login",
       redirect: true,
     });
   } catch (error) {

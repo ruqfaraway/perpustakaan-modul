@@ -7,6 +7,7 @@ import MainButton from "@/components/CustomUI/MainButton/MainButton";
 import MainTable from "@/components/CustomUI/MainTable/MainTable";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { HasPermission } from "@/lib/HasPermisssion";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -89,21 +90,35 @@ const BooksPage = ({
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <MainButton
-            loading={loading}
-            onClick={() =>
-              router.push(`/master-data/books/detail/${record.id}`)
+          <HasPermission
+            code="book:update"
+            fallback={<MainButton disabled>Detail</MainButton>}
+          >
+            <MainButton
+              loading={loading}
+              onClick={() =>
+                router.push(`/master-data/books/detail/${record.id}`)
+              }
+            >
+              Detail
+            </MainButton>
+          </HasPermission>
+          <HasPermission
+            code="book:delete"
+            fallback={
+              <MainButton variant="destructive" disabled>
+                Delete
+              </MainButton>
             }
           >
-            Detail
-          </MainButton>
-          <MainButton
-            variant="destructive"
-            loading={loading}
-            onClick={() => handleDelete(record.id)}
-          >
-            Delete
-          </MainButton>
+            <MainButton
+              variant="destructive"
+              loading={loading}
+              onClick={() => handleDelete(record.id)}
+            >
+              Delete
+            </MainButton>
+          </HasPermission>
         </div>
       ),
     },
@@ -136,9 +151,14 @@ const BooksPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/master-data/books/add")}>
-          Add Books
-        </MainButton>
+        <HasPermission
+          code="book:create"
+          fallback={<MainButton disabled>Add Books</MainButton>}
+        >
+          <MainButton onClick={() => router.push("/master-data/books/add")}>
+            Add Books
+          </MainButton>
+        </HasPermission>
         {isMounted && ( // Bungkus form dengan isMounted
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">

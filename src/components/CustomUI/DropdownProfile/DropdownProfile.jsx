@@ -11,15 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/authContext";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const DropdownProfile = () => {
+  const [mounted, setMounted] = useState();
   const logoutButton = async () => {
     await LogoutAction();
     toast.success("Logout successful");
   };
   const { user } = useAuth();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    return <div>Profile</div>;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -34,7 +42,7 @@ const DropdownProfile = () => {
           <div className="flex flex-col border p-2 rounded-sm">
             <span className="text-sm font-bold">{user?.name || "Guest"}</span>
             <span className="text-sm font-normal">
-              {user?.role.join("-") || "No Role"}
+              {user?.roles.join("-") || "No Role"}
             </span>
           </div>
         </div>

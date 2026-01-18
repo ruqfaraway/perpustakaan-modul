@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { calculateFine } from "@/lib/calculateFine";
 import { formatDate } from "@/lib/formatDate";
+import { HasPermission } from "@/lib/HasPermisssion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -129,12 +130,17 @@ const LoansPage = ({
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <MainButton
-            disabled={record.status === "RETURNED"}
-            onClick={() => handleOpenReturnDialog(record)}
+          <HasPermission
+            code="loan:manage"
+            fallback={<MainButton disabled>Return Process</MainButton>}
           >
-            Return Process
-          </MainButton>
+            <MainButton
+              disabled={record.status === "RETURNED"}
+              onClick={() => handleOpenReturnDialog(record)}
+            >
+              Return Process
+            </MainButton>
+          </HasPermission>
         </div>
       ),
     },
@@ -164,9 +170,14 @@ const LoansPage = ({
       )}
 
       <div className="flex justify-between">
-        <MainButton onClick={() => router.push("/transaction/loans/add")}>
-          Add Loans
-        </MainButton>
+        <HasPermission
+          code="loan:manage"
+          fallback={<MainButton disabled>Add Loans</MainButton>}
+        >
+          <MainButton onClick={() => router.push("/transaction/loans/add")}>
+            Add Loans
+          </MainButton>
+        </HasPermission>
         {isMounted && (
           <>
             <Form {...form}>
@@ -198,106 +209,106 @@ const LoansPage = ({
         rowkeys="id"
       />
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Proses Pengembalian Buku</DialogTitle>
-              <DialogDescription>
-                Member:{" "}
-                <span className="font-bold text-foreground">
-                  {selectedLoan?.memberName}
-                </span>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-6 py-4">
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  Buku yang dipinjam ({selectedLoan?.amount}):
-                </Label>
-                <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto pr-2">
-                  {selectedLoan?.bookTitles?.map((title, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 p-2 rounded-md bg-muted/50 border text-sm"
-                    >
-                      <div className="h-2 w-2 rounded-full bg-primary" />
-                      <span className="truncate">{title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="p-4 bg-muted rounded-lg border space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Jatuh Tempo:</span>
-                  <span className="font-medium">
-                    {selectedLoan?.dueDate &&
-                      format(new Date(selectedLoan.dueDate), "dd MMMM yyyy", {
-                        locale: id,
-                      })}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border transition-colors",
-                    lateDays > 0
-                      ? "bg-red-50 border-red-200"
-                      : "bg-green-50 border-green-200"
-                  )}
-                >
-                  <div className="flex justify-between font-bold">
-                    <span>Status Keterlambatan:</span>
-                    <span
-                      className={lateDays > 0 ? "text-red-600" : "text-green-600"}
-                    >
-                      {lateDays > 0 ? `${lateDays} Hari` : "Tepat Waktu"}
-                    </span>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Proses Pengembalian Buku</DialogTitle>
+            <DialogDescription>
+              Member:{" "}
+              <span className="font-bold text-foreground">
+                {selectedLoan?.memberName}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Buku yang dipinjam ({selectedLoan?.amount}):
+              </Label>
+              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto pr-2">
+                {selectedLoan?.bookTitles?.map((title, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-2 rounded-md bg-muted/50 border text-sm"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="truncate">{title}</span>
                   </div>
-
-                  {lateDays > 0 && (
-                    <>
-                      <div className="flex justify-between mt-2 text-lg font-extrabold text-red-700 border-t border-red-200 pt-2">
-                        <span>Total Denda:</span>
-                        <span>Rp {amount.toLocaleString("id-ID")}</span>
-                      </div>
-                      <div className="flex items-center gap-3 mt-4 p-2 bg-white/50 rounded border border-red-200">
-                        <Checkbox
-                          id="paid-status"
-                          checked={isPaid}
-                          onCheckedChange={(val) => setIsPaid(!!val)}
-                        />
-                        <Label
-                          htmlFor="paid-status"
-                          className="text-red-800 font-semibold cursor-pointer"
-                        >
-                          Denda sudah dibayar tunai?
-                        </Label>
-                      </div>
-                    </>
-                  )}
-                </div>
+                ))}
               </div>
             </div>
-
-            <DialogFooter>
-              <DialogClose asChild>
-                <MainButton variant="outline">Batal</MainButton>
-              </DialogClose>
-              <MainButton
-                loading={loading}
-                onClick={handleConfirm}
-                className={
-                  lateDays > 0 && !isPaid
-                    ? "bg-orange-600 hover:bg-orange-700"
-                    : ""
-                }
+            <div className="p-4 bg-muted rounded-lg border space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Jatuh Tempo:</span>
+                <span className="font-medium">
+                  {selectedLoan?.dueDate &&
+                    format(new Date(selectedLoan.dueDate), "dd MMMM yyyy", {
+                      locale: id,
+                    })}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div
+                className={cn(
+                  "p-4 rounded-lg border transition-colors",
+                  lateDays > 0
+                    ? "bg-red-50 border-red-200"
+                    : "bg-green-50 border-green-200",
+                )}
               >
-                Konfirmasi Pengembalian
-              </MainButton>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                <div className="flex justify-between font-bold">
+                  <span>Status Keterlambatan:</span>
+                  <span
+                    className={lateDays > 0 ? "text-red-600" : "text-green-600"}
+                  >
+                    {lateDays > 0 ? `${lateDays} Hari` : "Tepat Waktu"}
+                  </span>
+                </div>
+
+                {lateDays > 0 && (
+                  <>
+                    <div className="flex justify-between mt-2 text-lg font-extrabold text-red-700 border-t border-red-200 pt-2">
+                      <span>Total Denda:</span>
+                      <span>Rp {amount.toLocaleString("id-ID")}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-4 p-2 bg-white/50 rounded border border-red-200">
+                      <Checkbox
+                        id="paid-status"
+                        checked={isPaid}
+                        onCheckedChange={(val) => setIsPaid(!!val)}
+                      />
+                      <Label
+                        htmlFor="paid-status"
+                        className="text-red-800 font-semibold cursor-pointer"
+                      >
+                        Denda sudah dibayar tunai?
+                      </Label>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <MainButton variant="outline">Batal</MainButton>
+            </DialogClose>
+            <MainButton
+              loading={loading}
+              onClick={handleConfirm}
+              className={
+                lateDays > 0 && !isPaid
+                  ? "bg-orange-600 hover:bg-orange-700"
+                  : ""
+              }
+            >
+              Konfirmasi Pengembalian
+            </MainButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ContentWrapper>
   );
 };

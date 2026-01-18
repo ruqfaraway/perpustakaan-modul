@@ -19,26 +19,29 @@ export const metadata = {
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/authContext";
 import { auth } from "@/auth";
+import { SessionProvider } from "next-auth/react";
 
 export default async function RootLayout({ children }) {
-  const session = await auth(); // Ambil session di server
+  const session = await auth();
 
-  // Data user yang dikirim: { name: "Admin", role: "OFFICER" }
   const userData = session?.user
     ? {
+        id: session.user.id,
         name: session.user.name,
-        role: session.user.roles,
+        username: session.user.username,
+        roles: session.user.roles,
+        permissions: session.user.permissions,
       }
     : null;
-
-    
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster />
-        <AuthProvider initialUser={userData}>{children}</AuthProvider>
+        <SessionProvider session={session}>
+          <AuthProvider initialUser={userData}>{children}</AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   );

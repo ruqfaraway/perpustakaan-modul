@@ -1,25 +1,40 @@
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { auth } from "./auth";
+import { PROTECTED_ROUTES } from "./constants/permission";
+
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth;
   const { nextUrl } = req;
-  const isPublicRoute = nextUrl.pathname === "/login";
+  const isLoggedIn = !!req.auth; 
+  const userPermissions = req.auth?.user?.permissions || [];
 
-  // Jika tidak login dan mencoba akses rute terproteksi
-  if (!isLoggedIn && !isPublicRoute) {
+  const isAuthPage = nextUrl.pathname.startsWith("/login");
+  const isPublicPage = nextUrl.pathname === "/";
+
+  if (!isLoggedIn && !isAuthPage && !isPublicPage) {
     return NextResponse.redirect(new URL("/login", nextUrl));
   }
 
-  // Jika sudah login tapi malah mau ke halaman login
-  if (isLoggedIn && isPublicRoute) {
+  if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", nextUrl));
+  }
+
+  const currentRoute = PROTECTED_ROUTES.find((route) =>
+    nextUrl.pathname.startsWith(route.path)
+  );
+
+  if (isLoggedIn && currentRoute) {
+    const hasPermission = userPermissions.includes(currentRoute.permission);
+    
+    if (!hasPermission) {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
   }
 
   return NextResponse.next();
 });
 
 export const config = {
-  // Tetap gunakan matcher untuk filter rute mana yang kena proxy
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Melindungi semua halaman kecuali aset statis dan API auth
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };

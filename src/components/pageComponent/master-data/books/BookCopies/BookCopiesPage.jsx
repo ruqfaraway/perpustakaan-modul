@@ -4,14 +4,11 @@ import ButtonIcon from "@/components/CustomUI/ButtonIcon/ButtonIcon";
 import ContentWrapper from "@/components/CustomUI/ContentWrapper/ContentWrapper";
 import MainButton from "@/components/CustomUI/MainButton/MainButton";
 import MainTable from "@/components/CustomUI/MainTable/MainTable";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoSearch } from "react-icons/io5";
 import { toast } from "sonner";
 
 const BookCopiesPage = ({
@@ -27,9 +24,10 @@ const BookCopiesPage = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleDelete = async (bookId, id) => {
+  const handleDelete = async (id) => {
     setLoading(true);
-    const res = await deleteBookCopies(bookId, id);
+    console.log(id, bookId);
+    const res = await deleteBookCopies(id, bookId);
     if (res.success) {
       toast.success("Data Buku berhasil dihapus");
       setLoading(false);
@@ -39,16 +37,6 @@ const BookCopiesPage = ({
     }
   };
   const columns = [
-    // {
-    //   title: "No",
-    //   dataIndex: "no",
-    //   key: "no",
-    //   render: (_, __, index) => {
-    //     const page = Number(query?.page ?? 1);
-    //     const perPage = Number(query?.per_page ?? 10);
-    //     return (page - 1) * perPage + index + 1;
-    //   },
-    // },
     {
       title: "Code",
       dataIndex: "code",
@@ -67,7 +55,7 @@ const BookCopiesPage = ({
           <MainButton
             variant="destructive"
             loading={loading}
-            onClick={() => handleDelete(bookId, record.id)}
+            onClick={() => handleDelete(record.id)}
           >
             Delete
           </MainButton>
